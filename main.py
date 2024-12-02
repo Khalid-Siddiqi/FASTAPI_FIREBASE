@@ -1,30 +1,15 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi import FastAPI, Request, Form
+from fastapi.responses import JSONResponse
+from .firebase_config import db  # Import the Firestore client
 
 app = FastAPI()
 
-class Item(BaseModel):
-    name:str
-    price: float
-    is_offer:bool = None
-    tax:float = None
+@app.post("/image")
+async def save_data(request: Request):
+    data = await request.json()  # Get data from Postman
 
-@app.post("/items/")
-async def create_item(item: Item):
-    return item
+    # Save data to Firebase (example using Cloud Firestore)
+    doc_ref = db.collection('image').document()
+    doc_ref.set(data)
 
-@app.get("/")
-async def root():
-    return{"message": "Hello World"}
-
-@app.get("/items/{items_id}")
-async def read_item(items_id:int):
-    return{"item_id": items_id}
-#http://127.0.0.1:8000/items/4
-#{"item_id":4}
-@app.get("/items/")
-async def read_item(item_id: int, q: str=None):
-    return{"item_id": item_id, "q": q}
-# http://127.0.0.1:8000/items/?item_id=12&q=khalid
-# {"item_id":12,"q":"khalid"}
-
+    return JSONResponse({"message": "Data saved successfully"})
